@@ -77,7 +77,6 @@ int main()
 			while (h != NULL)
 			{
 				kill(-1 * (h -> pgid), SIGKILL);
-				printf("Killed %i.\n", h -> pgid);
 				h = h -> next;
 			}
 			exit(0);
@@ -245,7 +244,14 @@ int main()
 		{
 			if (tail != NULL)
 			{
+				if (currentFG == NULL)
+				{
 
+				}
+				else
+				{
+
+				}
 			}
 		}
 		if (pipeFound == 1) pipeSignal = 1;
