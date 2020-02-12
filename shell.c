@@ -43,6 +43,7 @@ int pipeSignal = -1;
 int ampersandSignal = -1;
 int currentFGOne = -1;
 int currentFGTwo = -1;
+int FGDestruction = 0;
 
 
 int main()
@@ -60,12 +61,27 @@ int main()
 	{
 		if (currentFG != NULL)
 		{
-			while (currentFG != NULL && ((currentFG -> pid1 != -1) || (currentFG -> pid2 != -1)));
+			while (((currentFG -> pid1 != -1) || (currentFG -> pid2 != -1)));
+		}
+		if (FGDestruction == 1)
+		{
+			currentFG = NULL;
+			FGDestruction = 0;
 		}
 		currentFGOne = 0;
 		currentFGTwo = 0;
 		input = readline("# ");
-		if (input == NULL) exit(0);
+		if (input == NULL)
+		{
+			job * h = head;
+			while (h != NULL)
+			{
+				kill(-1 * (h -> pgid), SIGKILL);
+				printf("Killed %i.\n", h -> pgid);
+				h = h -> next;
+			}
+			exit(0);
+		}
 		if (input == "") continue;
 		char * inputCopy = malloc(sizeof(char) * 1000);
 		strcpy(inputCopy, input);
@@ -302,8 +318,8 @@ int main()
 			{
 				if (currentFG != NULL)
 				{
-					free((*currentFGChild) -> command);
-					free(*currentFGChild);
+					//free((*currentFGChild) -> command);
+					//free(*currentFGChild);
 					*currentFGChild = NULL;
 				}
 				kill(getpid(), SIGKILL);
@@ -344,8 +360,8 @@ int main()
 				{
 					if (currentFG != NULL)
 					{
-						free((*currentFGChild) -> command);
-						free(*currentFGChild);
+						// free((*currentFGChild) -> command);
+						// free(*currentFGChild);
 						*currentFGChild = NULL;
 					}
 					kill(getpid(), SIGKILL);
@@ -386,7 +402,7 @@ void CHLD_Handler(int sig)
 	int status;
 	int pid;
 	pid = waitpid(-1, &status, WNOHANG | WCONTINUED | WUNTRACED);
-	if(WIFSIGNALED(status))
+	if (WIFSIGNALED(status))
 	{
 		if (currentFG != NULL)
 		{
@@ -520,9 +536,11 @@ void moveToList()
 		tail -> pid2 = currentFG -> pid2;
 		tail -> pgid = currentFG -> pgid;
 	}
-	free(currentFG -> command);
-	free(currentFG);
-	currentFG = NULL;
+	// free(currentFG -> command);
+	// free(currentFG);
+	currentFG -> pid1 = -1;
+	currentFG -> pid2 = -1;
+	FGDestruction = 1;
 }
 void destroy(job * x)
 {
@@ -535,6 +553,7 @@ void destroy(job * x)
 	{
 		if (f == x)
 		{
+			kill(-1 * (f -> pgid), SIGKILL);
 			if (f == head)
 			{
 				if (f -> next == NULL)
@@ -543,16 +562,16 @@ void destroy(job * x)
 					tail = NULL;
 					sign = '+';
 					printf("[%i]%c %s		%s\n", x -> number, sign, status, x -> command);
-					free(f -> command);
-					free(f);
+					// free(f -> command);
+					// free(f);
 				}
 				else
 				{
 					head = f -> next;
 					sign = '-';
 					printf("[%i]%c %s		%s\n", x -> number, sign, status, x -> command);
-					free(f -> command);
-					free(f);
+					// free(f -> command);
+					// free(f);
 				}
 			}
 			else if (f == tail)
@@ -561,17 +580,16 @@ void destroy(job * x)
 				tail = prev;
 				sign = '+';
 				printf("[%i]%c %s		%s\n", x -> number, sign, status, x -> command);
-				free(f -> command);
-				free(f);
+				// free(f -> command);
+				// free(f);
 			}
 			else
 			{
-				printf("xx\n");
 				prev -> next = f -> next;
 				sign = '-';
 				printf("[%i]%c %s		%s\n", x -> number, sign, status, x -> command);
-				free(f -> command);
-				free(f);
+				// free(f -> command);
+				// free(f);
 			}
 		}
 		prev = f;
